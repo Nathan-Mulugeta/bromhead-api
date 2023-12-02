@@ -28,6 +28,8 @@ app.get('/', (req, res) => {
 });
 
 app.use('/users', require('./routes/userRoutes'));
+app.use('/projects', require('./routes/projectRoutes'));
+app.use('/clients', require('./routes/clientRoutes'));
 
 app.all('*', (req, res) => {
   res.status(404);
