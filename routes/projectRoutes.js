@@ -10,7 +10,7 @@ router
   .route('/')
   .get(projectsController.getAllProjects)
   .post(checkRole, projectsController.createNewProject)
-  .patch(checkRole, projectsController.updateProject)
+  .patch(projectsController.updateProject)
   .delete(checkRole, projectsController.deleteProject);
 
 module.exports = router;
