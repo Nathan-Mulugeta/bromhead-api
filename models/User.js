@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 
 const userSchema = new mongoose.Schema({
   username: {
@@ -18,5 +19,17 @@ const userSchema = new mongoose.Schema({
     default: true,
   },
 });
+
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) {
+    next();
+  }
+
+  this.password = await bcrypt.hash(this.password, 10);
+});
+
+userSchema.methods.matchPassword = async function (enteredPassword) {
+  return bcrypt.compare(enteredPassword, this.password);
+};
 
 module.exports = mongoose.model('User', userSchema);

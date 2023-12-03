@@ -39,20 +39,17 @@ const createNewUser = async (req, res) => {
     throw new Error('Duplicate username');
   }
 
-  // Hash password
-  const hashedPwd = await bcrypt.hash(password, 10); // salt rounds
-
   const userObject =
     !Array.isArray(roles) || !roles.length
-      ? { username, password: hashedPwd }
-      : { username, password: hashedPwd, roles };
+      ? { username, password }
+      : { username, password, roles };
 
   // Create and store new user
   const user = await User.create(userObject);
 
   if (user) {
     //created
-    res.status(201).json({ message: `New user ${username} created` });
+    res.status(201).json({ message: `New user '${username}' created` });
   } else {
     res.status(400);
     throw new Error('Invalid user data received');
@@ -112,11 +109,6 @@ const updateUser = async (req, res) => {
   user.username = username;
   user.roles = roles;
   user.active = active;
-
-  if (password) {
-    // Hash password
-    user.password = await bcrypt.hash(password, 10); // salt rounds
-  }
 
   const updatedUser = await user.save();
 
