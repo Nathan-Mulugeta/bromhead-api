@@ -1,5 +1,4 @@
 const Project = require('../models/Project');
-const User = require('../models/User');
 
 const isValidDateFormat = (dateString) => {
   const regex = /^\d{4}-\d{2}-\d{2}$/;
