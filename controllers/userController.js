@@ -1,6 +1,11 @@
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
 
+const isValidEmail = (email) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
 // @desc    Get all users
 // @route   GET /users
 // @access  Private
@@ -44,6 +49,12 @@ const createNewUser = async (req, res) => {
       ? { username, password }
       : { username, password, roles };
 
+  // Send empty values to the database so that user can then update it later
+  userObject.firstName = 'Needs to be filled';
+  userObject.lastName = 'Needs to be filled';
+  userObject.email = 'Needs to be filled';
+  userObject.address = 'Needs to be filled';
+
   // Create and store new user
   const user = await User.create(userObject);
 
@@ -60,7 +71,18 @@ const createNewUser = async (req, res) => {
 // @route   PATCH /users
 // @access  Private
 const updateUser = async (req, res) => {
-  const { id, username, roles, active, password } = req.body;
+  const {
+    id,
+    username,
+    roles,
+    active,
+    password,
+    firstName,
+    lastName,
+    status,
+    email,
+    address,
+  } = req.body;
 
   // Confirm data
   if (
@@ -68,7 +90,12 @@ const updateUser = async (req, res) => {
     !username ||
     !Array.isArray(roles) ||
     !roles.length ||
-    typeof active !== 'boolean'
+    typeof active !== 'boolean' ||
+    !firstName ||
+    !lastName ||
+    !address ||
+    !email ||
+    !status
   ) {
     res.status(400);
     throw new Error('All fields except password are required');
@@ -88,6 +115,11 @@ const updateUser = async (req, res) => {
     .lean()
     .exec();
 
+  if (email && !isValidEmail(email)) {
+    res.status(400);
+    throw new Error('Please input a valid email.');
+  }
+
   // Allow updates to the original user
   if (duplicate && duplicate?._id.toString() !== id) {
     res.status(409);
@@ -98,7 +130,12 @@ const updateUser = async (req, res) => {
   const isUpdated =
     user.username !== username ||
     JSON.stringify(user.roles) !== JSON.stringify(roles) ||
-    user.active !== active;
+    user.active !== active ||
+    user.firstName !== firstName ||
+    user.lastName !== lastName ||
+    user.email !== email ||
+    user.address !== address ||
+    user.status !== status;
 
   if (!isUpdated && !password) {
     res.status(204).end();
@@ -109,10 +146,15 @@ const updateUser = async (req, res) => {
   user.username = username;
   user.roles = roles;
   user.active = active;
+  user.firstName = firstName;
+  user.lastName = lastName;
+  user.address = address;
+  user.email = email;
+  user.status = status;
 
   const updatedUser = await user.save();
 
-  res.json({ message: `${updatedUser.username} updated` });
+  res.status(200).json({ message: `${updatedUser.username} updated` });
 };
 
 // @desc    Delete a user

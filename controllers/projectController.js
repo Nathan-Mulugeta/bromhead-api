@@ -13,6 +13,7 @@ const getAllProjects = async (req, res) => {
   // Get all projects from MongoDB
   const projects = await Project.find()
     .populate({ path: 'assignedUsers', select: '-password' })
+    .populate('client')
     .lean()
     .exec();
 

@@ -1,10 +1,11 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
-const generateAccessToken = (username, roles) => {
+const generateAccessToken = (id, username, roles) => {
   return jwt.sign(
     {
       UserInfo: {
+        id,
         username,
         roles,
       },

@@ -31,7 +31,11 @@ const login = async (req, res) => {
     throw new Error('Unauthorized');
   }
 
-  const accessToken = generateAccessToken(foundUser.username, foundUser.roles);
+  const accessToken = generateAccessToken(
+    foundUser._id,
+    foundUser.username,
+    foundUser.roles
+  );
 
   const refreshToken = generateRefreshToken(res, foundUser.username);
 
@@ -78,6 +82,7 @@ const refresh = (req, res) => {
       const accessToken = jwt.sign(
         {
           UserInfo: {
+            id: foundUser._id,
             username: foundUser.username,
             roles: foundUser.roles,
           },

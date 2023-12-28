@@ -12,7 +12,7 @@ const errorHandler = (err, req, res, next) => {
 
   // mongoose throws a CastError when the ObjectId is invalid
   if (err.name === 'CastError' && err.kind === 'ObjectId') {
-    statusCode = 404;
+    status = 404;
     message = 'Resource not found';
   }
   res.status(status);

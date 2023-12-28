@@ -30,7 +30,7 @@ const getAllClients = async (req, res) => {
 // @access  Private
 const createNewClient = async (req, res) => {
   const { name, contactInfo } = req.body;
-  const { email, phone, address } = contactInfo;
+  const { email, phone, address, mapLocation } = contactInfo;
 
   // Confirm data
   if (!name || !phone || !address) {
