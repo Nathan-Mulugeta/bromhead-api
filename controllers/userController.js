@@ -50,10 +50,10 @@ const createNewUser = async (req, res) => {
       : { username, password, roles };
 
   // Send empty values to the database so that user can then update it later
-  userObject.firstName = 'Needs to be filled';
-  userObject.lastName = 'Needs to be filled';
-  userObject.email = 'Needs to be filled';
-  userObject.address = 'Needs to be filled';
+  userObject.firstName = 'undefined';
+  userObject.lastName = 'undefined';
+  userObject.email = 'undefined';
+  userObject.address = 'undefined';
 
   // Create and store new user
   const user = await User.create(userObject);
