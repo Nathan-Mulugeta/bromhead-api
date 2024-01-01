@@ -10,7 +10,7 @@ router
   .route('/')
   .get(usersController.getAllUsers)
   .post(checkRole, usersController.createNewUser)
-  .patch(checkRole, usersController.updateUser)
+  .patch(usersController.updateUser)
   .delete(checkRole, usersController.deleteUser);
 
 module.exports = router;

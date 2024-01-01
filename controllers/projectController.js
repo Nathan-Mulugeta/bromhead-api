@@ -14,6 +14,7 @@ const getAllProjects = async (req, res) => {
   const projects = await Project.find()
     .populate({ path: 'assignedUsers', select: '-password' })
     .populate('client')
+    .populate({ path: 'teamLeader', select: '-password' })
     .lean()
     .exec();
 
@@ -30,14 +31,22 @@ const getAllProjects = async (req, res) => {
 // @route   POST /projects
 // @access  Private
 const createNewProject = async (req, res) => {
-  const { name, description, deadline, completed, assignedUsers, client } =
-    req.body;
+  const {
+    name,
+    description,
+    deadline,
+    completed,
+    assignedUsers,
+    client,
+    serviceType,
+    teamLeader,
+  } = req.body;
 
   // Confirm data
-  if (!name || !assignedUsers || !client) {
+  if (!name || !assignedUsers || !client || !serviceType || !teamLeader) {
     res.status(400);
     throw new Error(
-      'Please fill out required fields (name, assignedUsers, client'
+      'Please fill out required fields (Name, Assigned Users, Client, Service Type)'
     );
   }
 
@@ -75,7 +84,11 @@ const createNewProject = async (req, res) => {
     completed,
     assignedUsers,
     client,
+    serviceType,
+    teamLeader,
   });
+
+  console.log('From mobile: ', project);
 
   if (project) {
     // Created
@@ -90,8 +103,18 @@ const createNewProject = async (req, res) => {
 // @route   PATCH /projects
 // @access  Private
 const updateProject = async (req, res) => {
-  const { id, name, description, deadline, completed, assignedUsers, client } =
-    req.body;
+  const {
+    id,
+    name,
+    description,
+    deadline,
+    completed,
+    assignedUsers,
+    client,
+    completedAt,
+    serviceType,
+    teamLeader,
+  } = req.body;
 
   // Confirm data
   if (
@@ -99,11 +122,13 @@ const updateProject = async (req, res) => {
     !name ||
     !assignedUsers?.length ||
     !client ||
+    !serviceType ||
+    !teamLeader ||
     typeof completed !== 'boolean'
   ) {
     res.status(400);
     throw new Error(
-      'Please fill the required fields. (name, assigned users, client, completed'
+      'Please fill the required fields. (Name, Assigned Users, Client, Completed, Service Type)'
     );
   }
 
@@ -133,6 +158,7 @@ const updateProject = async (req, res) => {
       'Invalid deadline format. Use ISO 8601 format (YYYY-MM-DD)'
     );
   }
+
   const parsedDeadline = deadline ? new Date(deadline) : null;
 
   if (deadline && isNaN(parsedDeadline.getTime())) {
@@ -142,12 +168,35 @@ const updateProject = async (req, res) => {
     );
   }
 
+  let parsedCompletedAt;
+
+  if (completed) {
+    //   Validate and format completed date
+    if (completedAt && !isValidDateFormat(completedAt)) {
+      res.status(400);
+      throw new Error(
+        'Invalid completion date format. Use ISO 8601 format (YYYY-MM-DD)'
+      );
+    }
+    parsedCompletedAt = completedAt ? new Date(deadline) : null;
+
+    if (completedAt && isNaN(parsedCompletedAt.getTime())) {
+      res.status(400);
+      throw new Error(
+        'Invalid deadline format. Use ISO 8601 format (YYYY-MM-DD)'
+      );
+    }
+  }
+
   // Check if the incoming values are different from the existing project
   const isUpdated =
     project.name !== name ||
     project.description !== description ||
     project.deadline !== parsedDeadline ||
+    project.completedAt !== parsedCompletedAt ||
     project.completed !== completed ||
+    project.serviceType !== serviceType ||
+    project.teamLeader !== teamLeader ||
     JSON.stringify(project.assignedUsers) !== JSON.stringify(assignedUsers) ||
     project.client !== client;
 
@@ -159,8 +208,11 @@ const updateProject = async (req, res) => {
   project.name = name;
   project.description = description;
   project.deadline = parsedDeadline;
+  project.completedAt = parsedCompletedAt;
   project.completed = completed;
+  project.serviceType = serviceType;
   project.assignedUsers = assignedUsers;
+  project.teamLeader = teamLeader;
   project.client = client;
 
   const updatedProject = await project.save();

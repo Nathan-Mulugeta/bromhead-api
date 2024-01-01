@@ -9,8 +9,16 @@ const projectSchema = new mongoose.Schema(
     description: {
       type: String,
     },
+    serviceType: {
+      type: String,
+      required: true,
+    },
     deadline: {
       type: Date,
+    },
+    completedAt: {
+      type: Date,
+      default: null,
     },
     completed: {
       type: Boolean,
@@ -20,11 +28,18 @@ const projectSchema = new mongoose.Schema(
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
+        required: true,
       },
     ],
+    teamLeader: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
     client: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Client',
+      required: true,
     },
   },
   {
