@@ -83,7 +83,7 @@ const createNewProject = async (req, res) => {
   }
   const parsedStartDate = startDate ? new Date(startDate) : null;
 
-  if (startDate && isNaN(startDate.getTime())) {
+  if (startDate && isNaN(parsedStartDate.getTime())) {
     res.status(400);
     throw new Error(
       'Invalid start date format. Use ISO 8601 format (YYYY-MM-DD)'
@@ -222,7 +222,7 @@ const updateProject = async (req, res) => {
   }
   const parsedStartDate = startDate ? new Date(startDate) : null;
 
-  if (startDate && isNaN(startDate.getTime())) {
+  if (startDate && isNaN(parsedStartDate.getTime())) {
     res.status(400);
     throw new Error(
       'Invalid start date format. Use ISO 8601 format (YYYY-MM-DD)'
