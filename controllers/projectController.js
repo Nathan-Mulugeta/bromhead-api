@@ -40,13 +40,21 @@ const createNewProject = async (req, res) => {
     client,
     serviceType,
     teamLeader,
+    startDate,
   } = req.body;
 
   // Confirm data
-  if (!name || !assignedUsers || !client || !serviceType || !teamLeader) {
+  if (
+    !name ||
+    !assignedUsers ||
+    !client ||
+    !serviceType ||
+    !teamLeader ||
+    !startDate
+  ) {
     res.status(400);
     throw new Error(
-      'Please fill out required fields (Name, Assigned Users, Client, Service Type)'
+      'Please fill out required fields (Name, Assigned Users, Client, Service Type, Team Leader, Start Date)'
     );
   }
 
@@ -63,6 +71,22 @@ const createNewProject = async (req, res) => {
     res.status(400);
     throw new Error(
       'Invalid deadline format. Use ISO 8601 format (YYYY-MM-DD)'
+    );
+  }
+
+  //   Validate and format startDate
+  if (startDate && !isValidDateFormat(startDate)) {
+    res.status(400);
+    throw new Error(
+      'Invalid start date format. Use ISO 8601 format (YYYY-MM-DD)'
+    );
+  }
+  const parsedStartDate = startDate ? new Date(startDate) : null;
+
+  if (startDate && isNaN(startDate.getTime())) {
+    res.status(400);
+    throw new Error(
+      'Invalid start date format. Use ISO 8601 format (YYYY-MM-DD)'
     );
   }
 
@@ -86,9 +110,8 @@ const createNewProject = async (req, res) => {
     client,
     serviceType,
     teamLeader,
+    startDate,
   });
-
-  console.log('From mobile: ', project);
 
   if (project) {
     // Created
@@ -114,6 +137,7 @@ const updateProject = async (req, res) => {
     completedAt,
     serviceType,
     teamLeader,
+    startDate,
   } = req.body;
 
   // Confirm data
@@ -124,11 +148,12 @@ const updateProject = async (req, res) => {
     !client ||
     !serviceType ||
     !teamLeader ||
+    !startDate ||
     typeof completed !== 'boolean'
   ) {
     res.status(400);
     throw new Error(
-      'Please fill the required fields. (Name, Assigned Users, Client, Completed, Service Type)'
+      'Please fill the required fields. (Name, Assigned Users, Client, Completed, Service Type, Team Leader, Start Date)'
     );
   }
 
@@ -188,12 +213,29 @@ const updateProject = async (req, res) => {
     }
   }
 
+  //   Validate and format startDate
+  if (startDate && !isValidDateFormat(startDate)) {
+    res.status(400);
+    throw new Error(
+      'Invalid start date format. Use ISO 8601 format (YYYY-MM-DD)'
+    );
+  }
+  const parsedStartDate = startDate ? new Date(startDate) : null;
+
+  if (startDate && isNaN(startDate.getTime())) {
+    res.status(400);
+    throw new Error(
+      'Invalid start date format. Use ISO 8601 format (YYYY-MM-DD)'
+    );
+  }
+
   // Check if the incoming values are different from the existing project
   const isUpdated =
     project.name !== name ||
     project.description !== description ||
     project.deadline !== parsedDeadline ||
     project.completedAt !== parsedCompletedAt ||
+    project.startDate !== parsedStartDate ||
     project.completed !== completed ||
     project.serviceType !== serviceType ||
     project.teamLeader !== teamLeader ||
@@ -209,6 +251,7 @@ const updateProject = async (req, res) => {
   project.description = description;
   project.deadline = parsedDeadline;
   project.completedAt = parsedCompletedAt;
+  project.startDate = parsedStartDate;
   project.completed = completed;
   project.serviceType = serviceType;
   project.assignedUsers = assignedUsers;

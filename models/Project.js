@@ -16,6 +16,10 @@ const projectSchema = new mongoose.Schema(
     deadline: {
       type: Date,
     },
+    startDate: {
+      type: Date,
+      required: true,
+    },
     completedAt: {
       type: Date,
       default: null,
@@ -46,5 +50,15 @@ const projectSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+// Adding a pre-save hook to update completedAt when completed is set to true
+projectSchema.pre('save', function (next) {
+  if (this.isModified('completed') && this.completed === true) {
+    this.completedAt = new Date().toISOString();
+  } else if (this.completed === false) {
+    this.completedAt = null;
+  }
+  next();
+});
 
 module.exports = mongoose.model('Project', projectSchema);
