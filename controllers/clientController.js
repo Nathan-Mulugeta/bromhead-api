@@ -30,12 +30,15 @@ const getAllClients = async (req, res) => {
 // @access  Private
 const createNewClient = async (req, res) => {
   const { name, contactInfo } = req.body;
-  const { email, phone, address, mapLocation } = contactInfo;
+  const { email, phone, address, mapLocation, contactPersonPosition } =
+    contactInfo;
 
   // Confirm data
-  if (!name || !phone || !address) {
+  if (!name || !phone || !address || !contactPersonPosition) {
     res.status(400);
-    throw new Error('Please fill out required fields (name, phone, address)');
+    throw new Error(
+      'Please fill out required fields (name, phone, address, contact person position)'
+    );
   }
 
   // Check for duplicate client
@@ -82,12 +85,15 @@ const updateClient = async (req, res) => {
 
   if (!contactInfo) throw new Error('No contact info defined.');
 
-  const { email, phone, address, mapLocation } = contactInfo;
+  const { email, phone, address, mapLocation, contactPersonPosition } =
+    contactInfo;
 
   // Confirm data
-  if (!name || !phone || !address) {
+  if (!name || !phone || !address || !contactPersonPosition) {
     res.status(400);
-    throw new Error('Please fill out required fields (name, phone, address)');
+    throw new Error(
+      'Please fill out required fields (name, phone, address, contact person position)'
+    );
   }
 
   // Confirm client exists to update
@@ -126,6 +132,7 @@ const updateClient = async (req, res) => {
     client.contactInfo.email !== email ||
     client.contactInfo.phone !== phone ||
     client.contactInfo.address !== address ||
+    client.contactInfo.contactPersonPosition !== contactPersonPosition ||
     client.contactInfo.mapLocation !== mapLocation;
 
   if (!isUpdated) {

@@ -13,6 +13,10 @@ const clientSchema = new mongoose.Schema({
       type: String,
       required: true,
     },
+    contactPersonPosition: {
+      type: String,
+      required: true,
+    },
     address: {
       type: String,
       required: true,
