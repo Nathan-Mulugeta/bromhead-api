@@ -16,7 +16,7 @@ const userSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    default: 'available',
+    default: 'Available',
   },
   active: {
     type: Boolean,
