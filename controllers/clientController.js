@@ -34,10 +34,10 @@ const createNewClient = async (req, res) => {
     contactInfo;
 
   // Confirm data
-  if (!name || !phone || !address || !contactPersonPosition) {
+  if (!name || !phone || !contactPersonPosition) {
     res.status(400);
     throw new Error(
-      'Please fill out required fields (name, phone, address, contact person position)'
+      'Please fill out required fields (name, phone, contact person position)'
     );
   }
 
@@ -85,11 +85,10 @@ const updateClient = async (req, res) => {
 
   if (!contactInfo) throw new Error('No contact info defined.');
 
-  const { email, phone, address, mapLocation, contactPersonPosition } =
-    contactInfo;
+  const { email, phone, mapLocation, contactPersonPosition } = contactInfo;
 
   // Confirm data
-  if (!name || !phone || !address || !contactPersonPosition) {
+  if (!name || !phone || !contactPersonPosition) {
     res.status(400);
     throw new Error(
       'Please fill out required fields (name, phone, address, contact person position)'
