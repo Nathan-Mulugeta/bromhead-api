@@ -143,6 +143,8 @@ const updateUser = async (req, res) => {
     return;
   }
 
+  if (password) user.password = password;
+
   user.username = username;
   user.roles = roles;
   user.active = active;
