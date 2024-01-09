@@ -38,6 +38,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  chargeOutRate: {
+    type: Number,
+    required: true,
+  },
 });
 
 userSchema.pre('save', async function (next) {

@@ -25,10 +25,10 @@ const getAllUsers = async (req, res) => {
 // @route   POST /users
 // @access  Private
 const createNewUser = async (req, res) => {
-  const { username, password, roles } = req.body;
+  const { username, password, roles, chargeOutRate } = req.body;
 
   // Confirm data
-  if (!username || !password) {
+  if (!username || !password || !chargeOutRate) {
     res.status(400);
     throw new Error('All fields are required');
   }
@@ -46,8 +46,8 @@ const createNewUser = async (req, res) => {
 
   const userObject =
     !Array.isArray(roles) || !roles.length
-      ? { username, password }
-      : { username, password, roles };
+      ? { username, password, chargeOutRate }
+      : { username, password, chargeOutRate, roles };
 
   // Send empty values to the database so that user can then update it later
   userObject.firstName = 'undefined';
@@ -82,6 +82,7 @@ const updateUser = async (req, res) => {
     status,
     email,
     address,
+    chargeOutRate,
   } = req.body;
 
   // Confirm data
@@ -95,7 +96,8 @@ const updateUser = async (req, res) => {
     !lastName ||
     !address ||
     !email ||
-    !status
+    !status ||
+    !chargeOutRate
   ) {
     res.status(400);
     throw new Error('All fields except password are required');
@@ -135,7 +137,8 @@ const updateUser = async (req, res) => {
     user.lastName !== lastName ||
     user.email !== email ||
     user.address !== address ||
-    user.status !== status;
+    user.status !== status ||
+    user.chargeOutRate !== chargeOutRate;
 
   if (!isUpdated && !password) {
     res.status(204).end();
@@ -153,6 +156,7 @@ const updateUser = async (req, res) => {
   user.address = address;
   user.email = email;
   user.status = status;
+  user.chargeOutRate = chargeOutRate;
 
   const updatedUser = await user.save();
 
