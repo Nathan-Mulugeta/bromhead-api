@@ -1,3 +1,4 @@
+const StatusHistory = require('../models/StatusHistory');
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
 
@@ -146,6 +147,15 @@ const updateUser = async (req, res) => {
   }
 
   if (password) user.password = password;
+
+  if (user.status !== status) {
+    const statusHistoryEntry = new StatusHistory({
+      userId: user._id,
+      status: status,
+    });
+
+    await statusHistoryEntry.save();
+  }
 
   user.username = username;
   user.roles = roles;
