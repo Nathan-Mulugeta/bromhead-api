@@ -25,10 +25,11 @@ const getAllUsers = async (req, res) => {
 // @route   POST /users
 // @access  Private
 const createNewUser = async (req, res) => {
-  const { username, password, roles, chargeOutRate } = req.body;
+  const { username, password, firstName, lastName, roles, chargeOutRate } =
+    req.body;
 
   // Confirm data
-  if (!username || !password || !chargeOutRate) {
+  if (!username || !password || !chargeOutRate || !firstName || !lastName) {
     res.status(400);
     throw new Error('All fields are required');
   }
@@ -46,12 +47,10 @@ const createNewUser = async (req, res) => {
 
   const userObject =
     !Array.isArray(roles) || !roles.length
-      ? { username, password, chargeOutRate }
-      : { username, password, chargeOutRate, roles };
+      ? { username, password, firstName, lastName, chargeOutRate }
+      : { username, password, firstName, lastName, chargeOutRate, roles };
 
   // Send empty values to the database so that user can then update it later
-  userObject.firstName = 'undefined';
-  userObject.lastName = 'undefined';
   userObject.email = 'undefined';
   userObject.address = 'undefined';
 
@@ -117,10 +116,10 @@ const updateUser = async (req, res) => {
     .lean()
     .exec();
 
-  if (email && !isValidEmail(email)) {
-    res.status(400);
-    throw new Error('Please input a valid email.');
-  }
+  // if (email && !isValidEmail(email)) {
+  //   res.status(400);
+  //   throw new Error('Please input a valid email.');
+  // }
 
   // Allow updates to the original user
   if (duplicate && duplicate?._id.toString() !== id) {
