@@ -148,10 +148,26 @@ const updateUser = async (req, res) => {
 
   if (password) user.password = password;
 
-  if (user.status !== status) {
+  // Find the latest status entry for the day
+  const latestStatusEntry = await StatusHistory.findOne({
+    userId: user._id,
+    timestamp: {
+      $gte: new Date().setHours(0, 0, 0, 0), // Start of the day
+      $lt: new Date().setHours(24, 0, 0, 0), // End of the day
+    },
+  }).sort({ timestamp: -1 });
+
+  // Update the existing status entry if it exists
+  if (latestStatusEntry) {
+    latestStatusEntry.status = status;
+    latestStatusEntry.timestamp = new Date();
+    await latestStatusEntry.save();
+  } else {
+    // Create a new status entry if none exists for the day
     const statusHistoryEntry = new StatusHistory({
       userId: user._id,
       status: status,
+      timestamp: new Date(),
     });
 
     await statusHistoryEntry.save();
