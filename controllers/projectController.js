@@ -103,15 +103,23 @@ const createNewProject = async (req, res) => {
     );
   }
 
-  //   // Check for duplicate title
-  //   const duplicate = await Project.findOne({ title })
-  //     .collation({ locale: 'en', strength: 2 })
-  //     .lean()
-  //     .exec();
+  // Check for duplicate project based on name, client, and startDate
+  const duplicate = await Project.findOne({
+    client,
+    startDate,
+  })
+    .collation({ locale: 'en', strength: 2 })
+    .lean()
+    .exec();
 
-  //   if (duplicate) {
-  //     return res.status(409).json({ message: 'Duplicate project title' });
-  //   }
+  if (duplicate) {
+    return res
+      .status(409)
+      .json({
+        message:
+          'A project already exists with the same client and starting date.',
+      });
+  }
 
   // Update the status of the user when user is assigned a project
   const users = await User.find({ _id: { $in: assignedUsers } }).exec();
