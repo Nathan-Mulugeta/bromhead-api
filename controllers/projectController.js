@@ -316,10 +316,10 @@ const updateProject = async (req, res) => {
       // Update the user's status based on project completion
       user.status = completed ? 'Available' : 'At Work';
 
-      if (
-        project.startDate !== parsedStartDate &&
-        parsedStartDate > new Date()
-      ) {
+      const isStartDateInFuture =
+        project.startDate !== parsedStartDate && parsedStartDate > new Date();
+
+      if (isStartDateInFuture) {
         user.status = 'Available';
       }
       await user.save();
@@ -336,13 +336,24 @@ const updateProject = async (req, res) => {
       // Update the existing status entry if it exists
       if (latestStatusEntry) {
         latestStatusEntry.status = completed ? 'Available' : 'At Work';
+
+        if (isStartDateInFuture) {
+          latestStatusEntry.status = 'Available';
+        }
         latestStatusEntry.timestamp = new Date();
         await latestStatusEntry.save();
       } else {
         // Create a new status entry if none exists for the day
+        let newStatus;
+        newStatus = completed ? 'Available' : 'At Work';
+
+        if (isStartDateInFuture) {
+          newStatus = 'Available';
+        }
+
         const statusHistoryEntry = new StatusHistory({
           userId: user._id,
-          status: completed ? 'Available' : 'At Work',
+          status: newStatus,
           timestamp: new Date(),
         });
 
