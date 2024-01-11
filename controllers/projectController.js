@@ -293,46 +293,44 @@ const updateProject = async (req, res) => {
     return;
   }
 
-  if (project.completed !== completed) {
-    // Update the status of the user when project completion status changes
-    const users = await User.find({ _id: { $in: assignedUsers } }).exec();
+  // Update the status of the user when project completion status changes
+  const users = await User.find({ _id: { $in: assignedUsers } }).exec();
 
-    for (const user of users) {
-      // Check if the user is assigned to another active project
-      const assignedToActiveProject = await isUserAssignedToActiveProject(
-        user._id,
-        project._id
-      );
+  for (const user of users) {
+    // Check if the user is assigned to another active project
+    const assignedToActiveProject = await isUserAssignedToActiveProject(
+      user._id,
+      project._id
+    );
 
-      if (!assignedToActiveProject) {
-        // Update the user's status based on project completion
-        user.status = completed ? 'Available' : 'At Work';
-        await user.save();
+    if (!assignedToActiveProject) {
+      // Update the user's status based on project completion
+      user.status = completed ? 'Available' : 'At Work';
+      await user.save();
 
-        // Find the latest status entry for the day
-        const latestStatusEntry = await StatusHistory.findOne({
+      // Find the latest status entry for the day
+      const latestStatusEntry = await StatusHistory.findOne({
+        userId: user._id,
+        timestamp: {
+          $gte: new Date().setHours(0, 0, 0, 0), // Start of the day
+          $lt: new Date().setHours(24, 0, 0, 0), // End of the day
+        },
+      }).sort({ timestamp: -1 });
+
+      // Update the existing status entry if it exists
+      if (latestStatusEntry) {
+        latestStatusEntry.status = completed ? 'Available' : 'At Work';
+        latestStatusEntry.timestamp = new Date();
+        await latestStatusEntry.save();
+      } else {
+        // Create a new status entry if none exists for the day
+        const statusHistoryEntry = new StatusHistory({
           userId: user._id,
-          timestamp: {
-            $gte: new Date().setHours(0, 0, 0, 0), // Start of the day
-            $lt: new Date().setHours(24, 0, 0, 0), // End of the day
-          },
-        }).sort({ timestamp: -1 });
+          status: completed ? 'Available' : 'At Work',
+          timestamp: new Date(),
+        });
 
-        // Update the existing status entry if it exists
-        if (latestStatusEntry) {
-          latestStatusEntry.status = completed ? 'Available' : 'At Work';
-          latestStatusEntry.timestamp = new Date();
-          await latestStatusEntry.save();
-        } else {
-          // Create a new status entry if none exists for the day
-          const statusHistoryEntry = new StatusHistory({
-            userId: user._id,
-            status: completed ? 'Available' : 'At Work',
-            timestamp: new Date(),
-          });
-
-          await statusHistoryEntry.save();
-        }
+        await statusHistoryEntry.save();
       }
     }
   }
