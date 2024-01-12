@@ -8,15 +8,18 @@ const isValidDateFormat = (dateString) => {
   return regex.test(dateString);
 };
 
-// Helper function to check if a user is assigned to another active project
+// Helper function to check if a user is assigned to an active project
 const isUserAssignedToActiveProject = async (userId, projectIdToExclude) => {
+  const currentDate = new Date();
+
   const activeProjects = await Project.find({
     _id: { $ne: projectIdToExclude }, // Exclude the current project
     assignedUsers: { $in: [userId] }, // Check if user's ID is in the array
-    completed: false, // Assuming completed field indicates if the project is active
+    completed: false, // Check if the project is not completed
+    startDate: { $lte: currentDate }, // Check if the project has a start date before or equal to the current date
   }).exec();
 
-  return activeProjects.length > 0; // Updated to check if assigned to any other active project
+  return activeProjects.length > 0; // Check if assigned to any active project
 };
 
 // @desc    Get all projects
