@@ -377,6 +377,7 @@ const updateProject = async (req, res) => {
   project.assignedUsers = assignedUsers;
   project.teamLeader = teamLeader;
   project.client = client;
+  project.confirmed = confirmed;
 
   const updatedProject = await project.save();
 

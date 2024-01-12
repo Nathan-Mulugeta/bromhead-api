@@ -45,6 +45,10 @@ const projectSchema = new mongoose.Schema(
       ref: 'Client',
       required: true,
     },
+    confirmed: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
