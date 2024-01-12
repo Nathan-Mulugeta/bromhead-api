@@ -123,7 +123,9 @@ const createNewProject = async (req, res) => {
   const users = await User.find({ _id: { $in: assignedUsers } }).exec();
   users.forEach(async (user) => {
     // Only update the status if the project starts either today or in the past
-    if (parsedStartDate <= new Date()) {
+    if (
+      parsedStartDate.setHours(0, 0, 0, 0) <= new Date().setHours(0, 0, 0, 0)
+    ) {
       user.status = 'At Work';
       await user.save();
 
@@ -316,14 +318,20 @@ const updateProject = async (req, res) => {
     );
 
     if (!assignedToActiveProject) {
-      if (parsedStartDate === new Date() && confirmed) {
+      if (
+        parsedStartDate.setHours(0, 0, 0, 0) ===
+          new Date().setHours(0, 0, 0, 0) &&
+        confirmed
+      ) {
         newStatus = 'At Work';
       }
       // Update the user's status based on project completion
       newStatus = completed ? 'Available' : 'At Work';
 
       const isStartDateInFuture =
-        project.startDate !== parsedStartDate && parsedStartDate > new Date();
+        project.startDate.setHours(0, 0, 0, 0) !==
+          parsedStartDate.setHours(0, 0, 0, 0) &&
+        parsedStartDate.setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0);
 
       if (isStartDateInFuture) {
         newStatus = 'Available';
