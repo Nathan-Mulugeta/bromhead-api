@@ -192,6 +192,7 @@ const updateProject = async (req, res) => {
     serviceType,
     teamLeader,
     startDate,
+    confirmed,
   } = req.body;
 
   // Confirm data
@@ -296,7 +297,7 @@ const updateProject = async (req, res) => {
     JSON.stringify(project.assignedUsers) !== JSON.stringify(assignedUsers) ||
     project.client !== client;
 
-  if (!isUpdated) {
+  if (!isUpdated && !confirmed) {
     res.status(204).end();
     console.log('Nothing new to update');
     return;
@@ -304,6 +305,8 @@ const updateProject = async (req, res) => {
 
   // Update the status of the user when project completion status changes
   const users = await User.find({ _id: { $in: assignedUsers } }).exec();
+
+  let newStatus;
 
   for (const user of users) {
     // Check if the user is assigned to another active project
@@ -313,15 +316,20 @@ const updateProject = async (req, res) => {
     );
 
     if (!assignedToActiveProject) {
+      if (parsedStartDate === new Date() && confirmed) {
+        newStatus = 'At Work';
+      }
       // Update the user's status based on project completion
-      user.status = completed ? 'Available' : 'At Work';
+      newStatus = completed ? 'Available' : 'At Work';
 
       const isStartDateInFuture =
         project.startDate !== parsedStartDate && parsedStartDate > new Date();
 
       if (isStartDateInFuture) {
-        user.status = 'Available';
+        newStatus = 'Available';
       }
+
+      user.status = newStatus;
       await user.save();
 
       // Find the latest status entry for the day
@@ -335,22 +343,11 @@ const updateProject = async (req, res) => {
 
       // Update the existing status entry if it exists
       if (latestStatusEntry) {
-        latestStatusEntry.status = completed ? 'Available' : 'At Work';
-
-        if (isStartDateInFuture) {
-          latestStatusEntry.status = 'Available';
-        }
+        latestStatusEntry.status = newStatus;
         latestStatusEntry.timestamp = new Date();
         await latestStatusEntry.save();
       } else {
         // Create a new status entry if none exists for the day
-        let newStatus;
-        newStatus = completed ? 'Available' : 'At Work';
-
-        if (isStartDateInFuture) {
-          newStatus = 'Available';
-        }
-
         const statusHistoryEntry = new StatusHistory({
           userId: user._id,
           status: newStatus,
