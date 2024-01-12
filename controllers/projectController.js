@@ -122,9 +122,9 @@ const createNewProject = async (req, res) => {
   // Update the status of the user when user is assigned a project
   const users = await User.find({ _id: { $in: assignedUsers } }).exec();
   users.forEach(async (user) => {
-    // Only update the status if the project starts either today or in the past
+    // Only update the status if the project starts in the past
     if (
-      parsedStartDate.setHours(0, 0, 0, 0) <= new Date().setHours(0, 0, 0, 0)
+      parsedStartDate.setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)
     ) {
       user.status = 'At Work';
       await user.save();
