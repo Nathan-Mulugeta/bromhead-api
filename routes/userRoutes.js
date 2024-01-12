@@ -9,7 +9,7 @@ router.use(verifyJWT);
 router
   .route('/')
   .get(usersController.getAllUsers)
-  .post(checkRole, usersController.createNewUser)
+  .post(usersController.createNewUser)
   .patch(usersController.updateUser)
   .delete(checkRole, usersController.deleteUser);
 

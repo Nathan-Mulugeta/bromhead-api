@@ -1,3 +1,4 @@
+const Project = require('../models/Project');
 const StatusHistory = require('../models/StatusHistory');
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
@@ -212,6 +213,13 @@ const deleteUser = async (req, res) => {
   if (!user) {
     res.status(400);
     throw new Error('User not found');
+  }
+
+  const projects = await Project.find({ assignedUsers: id }).exec();
+
+  if (projects && projects.length > 0) {
+    res.status(400);
+    throw new Error('User has assigned projects');
   }
 
   const result = await user.deleteOne();
