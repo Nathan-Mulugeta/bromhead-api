@@ -439,7 +439,7 @@ const deleteProject = async (req, res) => {
         // Create a new status entry if none exists for the day
         const statusHistoryEntry = new StatusHistory({
           userId: user._id,
-          status: completed ? 'Available' : 'At Work',
+          status: project.completed ? 'Available' : 'At Work',
           timestamp: new Date(),
         });
 
