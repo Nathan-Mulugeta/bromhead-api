@@ -320,6 +320,8 @@ const updateProject = async (req, res) => {
       project._id
     );
 
+    console.log(user.username, ': ', assignedToActiveProject);
+
     if (!assignedToActiveProject) {
       if (
         parsedStartDate.setHours(0, 0, 0, 0) ===
@@ -332,8 +334,6 @@ const updateProject = async (req, res) => {
       newStatus = completed ? 'Available' : 'At Work';
 
       const isStartDateInFuture =
-        project.startDate.setHours(0, 0, 0, 0) !==
-          parsedStartDate.setHours(0, 0, 0, 0) &&
         parsedStartDate.setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0);
 
       if (isStartDateInFuture) {
@@ -366,6 +366,62 @@ const updateProject = async (req, res) => {
         });
 
         await statusHistoryEntry.save();
+      }
+    }
+  }
+
+  const assignedUserStrings = assignedUsers.map((userId) => userId.toString());
+
+  // Identify removed users
+  const removedUsers = project.assignedUsers.filter(
+    (userId) => !assignedUserStrings.includes(userId.toString())
+  );
+
+  if (removedUsers.length > 0) {
+    for (const removedUserId of removedUsers) {
+      // Check if the removed user is not assigned to any other active projects
+      const isUserAssignedToActiveProjects =
+        await isUserAssignedToActiveProject(
+          removedUserId.toString(),
+          project._id
+        );
+
+      if (!isUserAssignedToActiveProjects) {
+        // Set the status of the removed user to 'Available'
+        const removedUser = await User.findById(
+          removedUserId.toString()
+        ).exec();
+
+        if (removedUser) {
+          removedUser.status = 'Available';
+          await removedUser.save();
+          console.log('Removed user: ', removedUser);
+
+          // Find the latest status entry for the day
+          const latestStatusEntry = await StatusHistory.findOne({
+            userId: removedUser._id,
+            timestamp: {
+              $gte: new Date().setHours(0, 0, 0, 0), // Start of the day
+              $lt: new Date().setHours(24, 0, 0, 0), // End of the day
+            },
+          }).sort({ timestamp: -1 });
+
+          // Update the existing status entry if it exists
+          if (latestStatusEntry) {
+            latestStatusEntry.status = 'Available';
+            latestStatusEntry.timestamp = new Date();
+            await latestStatusEntry.save();
+          } else {
+            // Create a new status entry if none exists for the day
+            const statusHistoryEntry = new StatusHistory({
+              userId: removedUser._id,
+              status: 'Available',
+              timestamp: new Date(),
+            });
+
+            await statusHistoryEntry.save();
+          }
+        }
       }
     }
   }
