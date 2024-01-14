@@ -320,8 +320,6 @@ const updateProject = async (req, res) => {
       project._id
     );
 
-    console.log(user.username, ': ', assignedToActiveProject);
-
     if (!assignedToActiveProject) {
       if (
         parsedStartDate.setHours(0, 0, 0, 0) ===
@@ -395,7 +393,6 @@ const updateProject = async (req, res) => {
         if (removedUser) {
           removedUser.status = 'Available';
           await removedUser.save();
-          console.log('Removed user: ', removedUser);
 
           // Find the latest status entry for the day
           const latestStatusEntry = await StatusHistory.findOne({
